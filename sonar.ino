@@ -1,31 +1,55 @@
 #include <Servo.h>
-const int trigPin = 10, echoPin = 11, servoPin = 12;
-Servo myServo;
+
+const int trigPin = 10;
+const int echoPin = 11;
+const int servoPin = 12;
+
+Servo servo;
 
 void setup() {
-  pinMode(13, OUTPUT);
-  digitalWrite(13, HIGH);  // Show setup ran
-  Serial.begin(9600);
+  servo.attach(servoPin);
   pinMode(trigPin, OUTPUT);
   pinMode(echoPin, INPUT);
-  myServo.attach(servoPin);
-  myServo.write(0);
+  Serial.begin(9600);
 }
 
 void loop() {
-  digitalWrite(13, !digitalRead(13)); // Blink LED
-  long duration;
+  // 🔁 Clockwise sweep
+  Serial.println("Sweeping Clockwise...");
+  servo.write(95);  // Slow clockwise
+  for (int i = 0; i <= 36; i++) { // Simulate 360° in 10° steps
+    delay(200); // Wait for ~10° rotation
+    readDistance(i * 10);
+  }
+  servo.write(90); // Stop
+  delay(1000);
+
+  // 🔁 Counter-clockwise sweep
+  Serial.println("Sweeping Counter-Clockwise...");
+  servo.write(85);  // Slow counter-clockwise
+  for (int i = 36; i >= 0; i--) {
+    delay(200);
+    readDistance(i * 10);
+  }
+  servo.write(90); // Stop
+  delay(1000);
+}
+
+void readDistance(int angle) {
+  long duration, distance;
+
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
+
   duration = pulseIn(echoPin, HIGH);
-  int distance = duration * 0.034 / 2;
-  Serial.print("Dist: "); Serial.print(distance); Serial.println(" cm");
-  
-  int angle = map(distance, 2, 200, 0, 180); // Scale dist to angle
-  angle = constrain(angle, 0, 180);
-  myServo.write(angle);
-  delay(100);
+  distance = duration * 0.034 / 2;
+
+  Serial.print("Angle: ");
+  Serial.print(angle);
+  Serial.print("°, Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
 }
